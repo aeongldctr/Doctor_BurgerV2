@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import './DoctorBurger.css';
+import Product from './Product';
+import ShoppingCart from './ShoppingCart';
 
+// Import ng burger photos
 import burger1 from '../burger1.webp';
 import burger2 from '../burger2.webp';
 import burger3 from '../burger3.webp';
@@ -12,6 +15,7 @@ import burger8 from '../burger8.webp';
 import burger9 from '../burger9.webp';
 
 const DoctorBurger = () => {
+  // burgers
   const burgers = [
     {
       id: 1,
@@ -94,24 +98,25 @@ const DoctorBurger = () => {
       rating: 5,
       image: burger9
     }
-  ]; 
+  ];
+
   const [favorites, setFavorites] = useState({});
   const [showAll, setShowAll] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [modalQty, setModalQty] = useState(1);
+  const [selectedBurger, setSelectedBurger] = useState(null);
   const [cartItems, setCartItems] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [checkoutComplete, setCheckoutComplete] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
+  // 8 burgers muna
   const displayedBurgers = showAll ? burgers : burgers.slice(0, 8);
 
   const showToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => {
       setToastMessage('');
-    }, 2600);
+    }, 2500);
   };
+
   const toggleFavorite = (id, e) => {
     e.stopPropagation();
     setFavorites((prev) => ({
@@ -119,18 +124,20 @@ const DoctorBurger = () => {
       [id]: !prev[id]
     }));
   };
+
+  // para sa product modal
   const openProductModal = (burger) => {
-    setSelectedProduct(burger);
-    setModalQty(1);
-  };
-  const closeProductModal = () => {
-    setSelectedProduct(null);
-    setModalQty(1);
+    setSelectedBurger(burger);
   };
 
-  const handleAddToCart = (product, qty) => {
+  const closeProductModal = () => {
+    setSelectedBurger(null);
+  };
+
+  // Pag add sa cart
+  const handleAddToCart = (burger, qty) => {
     setCartItems((prevItems) => {
-      const existingIndex = prevItems.findIndex((item) => item.id === product.id);
+      const existingIndex = prevItems.findIndex((item) => item.id === burger.id);
       if (existingIndex > -1) {
         const updated = [...prevItems];
         updated[existingIndex] = {
@@ -142,10 +149,10 @@ const DoctorBurger = () => {
         return [
           ...prevItems,
           {
-            id: product.id,
-            name: product.name,
-            price: product.price,
-            image: product.image,
+            id: burger.id,
+            name: burger.name,
+            price: burger.price,
+            image: burger.image,
             quantity: qty
           }
         ];
@@ -153,16 +160,16 @@ const DoctorBurger = () => {
     });
 
     closeProductModal();
-    showToast(`Added ${qty}x ${product.name} to your bag! 🍔`);
+    showToast(`Added ${qty}x ${burger.name} to cart! 🍔`);
   };
 
-  const updateCartItemQty = (id, delta) => {
+  const handleUpdateQty = (id, change) => {
     setCartItems((prevItems) => {
       return prevItems
         .map((item) => {
           if (item.id === id) {
-            const newQty = item.quantity + delta;
-            return newQty > 0 ? { ...item, quantity: newQty } : null;
+            const bagongQty = item.quantity + change;
+            return bagongQty > 0 ? { ...item, quantity: bagongQty } : null;
           }
           return item;
         })
@@ -170,35 +177,27 @@ const DoctorBurger = () => {
     });
   };
 
-  const removeCartItem = (id) => {
+  const handleRemoveItem = (id) => {
     setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
   };
 
-  const handleCheckout = () => {
-    if (cartItems.length === 0) return;
-    setCheckoutComplete(true);
-  };
-
-  const handleFinishCheckout = () => {
+  // Pagkatapos mag-checkout
+  const handleCheckoutComplete = () => {
     setCartItems([]);
-    setCheckoutComplete(false);
     setIsCartOpen(false);
-    showToast('🎉 Order placed successfully! Thank you for dining with us!');
+    showToast('🎉 Order placed successfully! Enjoy your meal!');
   };
-
-  const cartTotalPrice = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0
-  );
 
   return (
     <div className="burger-app-container">
+      {/* Toast notif */}
       {toastMessage && (
         <div className="toast-notification">
           <span>{toastMessage}</span>
         </div>
       )}
 
+      {/* Header and Navbar */}
       <header className="navbar">
         <div className="logo">
           <span className="burger-logo-icon">🍔</span>
@@ -213,6 +212,7 @@ const DoctorBurger = () => {
             <a href="#contact">CONTACT</a>
           </nav>
 
+          {/* Cart Icon: red notif if may laman */}
           <div
             className="cart-icon"
             onClick={() => setIsCartOpen(true)}
@@ -235,6 +235,7 @@ const DoctorBurger = () => {
               <path d="M16 10a4 4 0 0 1-8 0"></path>
             </svg>
 
+            {/* Bilang ng distinct burger types */}
             {cartItems.length > 0 && (
               <span className="cart-badge">{cartItems.length}</span>
             )}
@@ -242,6 +243,7 @@ const DoctorBurger = () => {
         </div>
       </header>
 
+      {/* Hero Title */}
       <section className="burger-hero">
         <h1 className="section-title">OUR CRAZY BURGERS</h1>
         <p>
@@ -249,13 +251,14 @@ const DoctorBurger = () => {
         </p>
       </section>
 
+      {/* Grid ng mga burgers (8 items muna) */}
       <section className="burger-grid">
         {displayedBurgers.map((burger) => (
           <div
             key={burger.id}
             className="burger-card"
             onClick={() => openProductModal(burger)}
-            title="Click to view details & customize"
+            title="Click to view details"
           >
             <div className="burger-card-img-wrap">
               <img src={burger.image} alt={burger.name} className="burger-image" />
@@ -273,7 +276,7 @@ const DoctorBurger = () => {
                   className="heart-btn"
                   onClick={(e) => toggleFavorite(burger.id, e)}
                   style={{ opacity: favorites[burger.id] ? 1 : 0.4 }}
-                  title={favorites[burger.id] ? 'Remove from favorites' : 'Add to favorites'}
+                  title="Favorite"
                 >
                   ♥
                 </button>
@@ -291,6 +294,7 @@ const DoctorBurger = () => {
         ))}
       </section>
 
+      {/* View More Button: Lalabas kung 9 o higit pa */}
       {burgers.length > 8 && (
         <div className="view-more-container">
           <button
@@ -305,282 +309,22 @@ const DoctorBurger = () => {
         </div>
       )}
 
-      {selectedProduct && (
-        <div className="modal-overlay" onClick={closeProductModal}>
-          <div
-            className="product-modal-horizontal"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              className="modal-close-btn"
-              onClick={closeProductModal}
-              aria-label="Close product details"
-            >
-              ✕
-            </button>
+      {/* Product Details Modal */}
+      <Product
+        burger={selectedBurger}
+        onClose={closeProductModal}
+        onAddToCart={handleAddToCart}
+      />
 
-            <div className="modal-image-col">
-              <img
-                src={selectedProduct.image}
-                alt={selectedProduct.name}
-                className="modal-burger-img"
-              />
-              <span className="modal-tag">Fresh & Hot</span>
-            </div>
-
-            <div className="modal-info-col">
-              <div className="modal-info-top">
-                <div className="modal-rating-badge-row">
-                  <span className="modal-stars">
-                    {'★'.repeat(selectedProduct.rating)}
-                    {'☆'.repeat(5 - selectedProduct.rating)}
-                  </span>
-                  <span className="modal-rating-text">{selectedProduct.rating}.0 / 5.0 Rating</span>
-                </div>
-
-                <h2 className="modal-title">{selectedProduct.name}</h2>
-
-                <div className="modal-base-price">
-                  <span className="price-label">Base Price:</span>
-                  <span className="base-price-val">${selectedProduct.price.toFixed(2)}</span>
-                </div>
-
-                <div className="modal-description-wrapper">
-                  <h4 className="desc-heading">What Makes It Delicious:</h4>
-                  <p className="modal-detailed-desc">{selectedProduct.detailDescription}</p>
-                </div>
-              </div>
-
-              <div className="modal-bottom-controls">
-                <div className="modal-qty-price-row">
-                  <div className="qty-picker-group">
-                    <span className="qty-picker-label">Quantity:</span>
-                    <div className="qty-counter-box">
-                      <button
-                        type="button"
-                        className="qty-action-btn"
-                        onClick={() => setModalQty((q) => Math.max(1, q - 1))}
-                        title="Decrease quantity"
-                      >
-                        -
-                      </button>
-                      <span className="qty-counter-number">{modalQty}</span>
-                      <button
-                        type="button"
-                        className="qty-action-btn"
-                        onClick={() => setModalQty((q) => q + 1)}
-                        title="Increase quantity"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="modal-dynamic-calc">
-                    <span className="dynamic-calc-formula">
-                      {modalQty} × ${selectedProduct.price.toFixed(2)}
-                    </span>
-                    <span className="dynamic-calc-total">
-                      ${(selectedProduct.price * modalQty).toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  className="modal-add-to-cart-btn"
-                  onClick={() => handleAddToCart(selectedProduct, modalQty)}
-                >
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#ffffff"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                    <line x1="3" y1="6" x2="21" y2="6"></line>
-                    <path d="M16 10a4 4 0 0 1-8 0"></path>
-                  </svg>
-                  <span>Add To Cart • ${(selectedProduct.price * modalQty).toFixed(2)}</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isCartOpen && (
-        <div className="cart-drawer-overlay" onClick={() => setIsCartOpen(false)}>
-          <div
-            className="cart-drawer-vertical"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="cart-drawer-header">
-              <div className="cart-drawer-title-group">
-                <span className="cart-header-icon">🛍️</span>
-                <h3>Your Shopping Bag</h3>
-                <span className="cart-distinct-badge">
-                  {cartItems.length} {cartItems.length === 1 ? 'Burger' : 'Burgers'}
-                </span>
-              </div>
-              <button
-                type="button"
-                className="cart-drawer-close-btn"
-                onClick={() => setIsCartOpen(false)}
-                aria-label="Close cart drawer"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="cart-drawer-body">
-              {cartItems.length === 0 ? (
-                <div className="cart-empty-box">
-                  <div className="cart-empty-emoji">🍔</div>
-                  <h4>Your Bag Is Empty</h4>
-                  <p>Choose from our delicious burgers to start your order!</p>
-                  <button
-                    type="button"
-                    className="cart-empty-browse-btn"
-                    onClick={() => setIsCartOpen(false)}
-                  >
-                    Explore Menu
-                  </button>
-                </div>
-              ) : (
-                <div className="cart-items-list">
-                  {cartItems.map((item) => (
-                    <div key={item.id} className="cart-item-card">
-                      <img src={item.image} alt={item.name} className="cart-item-image" />
-
-                      <div className="cart-item-info">
-                        <div className="cart-item-header">
-                          <h4 className="cart-item-name">{item.name}</h4>
-                          <button
-                            type="button"
-                            className="cart-item-remove-btn"
-                            onClick={() => removeCartItem(item.id)}
-                            title="Remove this burger"
-                          >
-                            ✕
-                          </button>
-                        </div>
-
-                        <div className="cart-item-unit-price">
-                          ${item.price.toFixed(2)} each
-                        </div>
-
-                        <div className="cart-item-calc-row">
-                          <div className="cart-item-qty-control">
-                            <button
-                              type="button"
-                              className="qty-btn-mini"
-                              onClick={() => updateCartItemQty(item.id, -1)}
-                              title="Minus quantity"
-                            >
-                              -
-                            </button>
-                            <span className="cart-item-qty-count">{item.quantity}</span>
-                            <button
-                              type="button"
-                              className="qty-btn-mini"
-                              onClick={() => updateCartItemQty(item.id, 1)}
-                              title="Plus quantity"
-                            >
-                              +
-                            </button>
-                          </div>
-
-                          <div className="cart-item-total-col">
-                            <span className="cart-item-math-label">
-                              {item.quantity} × ${item.price.toFixed(2)}
-                            </span>
-                            <span className="cart-item-math-total">
-                              ${(item.price * item.quantity).toFixed(2)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {cartItems.length > 0 && (
-              <div className="cart-drawer-footer">
-                <div className="cart-total-row">
-                  <span className="cart-total-label">Grand Total:</span>
-                  <span className="cart-total-amount">
-                    ${cartTotalPrice.toFixed(2)}
-                  </span>
-                </div>
-
-                <div className="cart-drawer-buttons">
-                  <button
-                    type="button"
-                    className="cart-add-more-btn"
-                    onClick={() => setIsCartOpen(false)}
-                  >
-                    + Add More Items
-                  </button>
-
-                  <button
-                    type="button"
-                    className="cart-checkout-btn"
-                    onClick={handleCheckout}
-                  >
-                    Done Check Out (${cartTotalPrice.toFixed(2)})
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {checkoutComplete && (
-        <div className="modal-overlay" onClick={() => setCheckoutComplete(false)}>
-          <div
-            className="checkout-success-card"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="success-badge-icon">🎉</div>
-            <h3 className="success-title">Order Placed Successfully!</h3>
-            <p className="success-desc">
-              Thank you for ordering at <strong>TASTY BURGER</strong>! Your delicious burgers are now being freshly grilled and prepared.
-            </p>
-
-            <div className="order-summary-box">
-              <div className="summary-line">
-                <span>Distinct Burgers:</span>
-                <strong>{cartItems.length} types</strong>
-              </div>
-              <div className="summary-line">
-                <span>Total Quantity:</span>
-                <strong>{cartItems.reduce((acc, i) => acc + i.quantity, 0)} burgers</strong>
-              </div>
-              <div className="summary-line highlight-total">
-                <span>Total Paid:</span>
-                <strong className="success-price">${cartTotalPrice.toFixed(2)}</strong>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              className="success-complete-btn"
-              onClick={handleFinishCheckout}
-            >
-              Done & Close
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Shopping Cart Drawer */}
+      <ShoppingCart
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        cartItems={cartItems}
+        onUpdateQty={handleUpdateQty}
+        onRemoveItem={handleRemoveItem}
+        onCheckoutComplete={handleCheckoutComplete}
+      />
     </div>
   );
 };
